@@ -4,12 +4,18 @@ import { deleteLogById, insertLog, listLogs } from "../db.js";
 
 const router = Router();
 
+const timestampSchema = z.preprocess(
+  (val: unknown) => (val === null || val === "" ? undefined : val),
+  z.string().datetime().optional()
+);
+
 const logSchema = z.object({
   level: z.string().min(1),
   label: z.string().min(1),
   message: z.string().min(1),
   context: z.any().optional(),
-  timestamp: z.string().datetime().optional(),
+  // Accept missing/empty/null timestamp; server will default to now().
+  timestamp: timestampSchema,
   source: z.string().optional(),
 });
 
@@ -23,12 +29,12 @@ const listSchema = z.object({
   limit: z
     .string()
     .optional()
-    .transform((v) => (v ? Number(v) : 200))
+    .transform((v: string | undefined) => (v ? Number(v) : 200))
     .pipe(z.number().int().min(1).max(1000)),
   offset: z
     .string()
     .optional()
-    .transform((v) => (v ? Number(v) : 0))
+    .transform((v: string | undefined) => (v ? Number(v) : 0))
     .pipe(z.number().int().min(0)),
   cursor: z.string().optional(),
   since_id: z.string().optional(),
