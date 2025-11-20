@@ -76,7 +76,11 @@ function LogRow({
               onClick={() => setExpanded(!expanded)}
               className="mt-0.5 text-slate-500 hover:text-slate-300 focus:outline-none"
             >
-              {expanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+              {expanded ? (
+                <ChevronDown id={`${rowId}-collapse-icon`} className="h-4 w-4" />
+              ) : (
+                <ChevronRight id={`${rowId}-expand-icon`} className="h-4 w-4" />
+              )}
             </button>
             <span
               id={`${rowId}-message-text`}
@@ -97,7 +101,7 @@ function LogRow({
               onClick={() => onCopy(item)}
               title="Copy JSON"
             >
-              <Copy className="h-4 w-4 text-slate-400" />
+              <Copy id={`${rowId}-copy-icon`} className="h-4 w-4 text-slate-400" />
             </Button>
             <Button
               id={`${rowId}-delete-button`}
@@ -107,7 +111,7 @@ function LogRow({
               onClick={() => onDelete(item.id)}
               title="Delete"
             >
-              <Trash2 className="h-4 w-4 text-red-400" />
+              <Trash2 id={`${rowId}-delete-icon`} className="h-4 w-4 text-red-400" />
             </Button>
           </div>
         </td>

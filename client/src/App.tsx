@@ -31,7 +31,7 @@ const initialFilters: FiltersState = {
 function App() {
   const [filters, setFilters] = useState<FiltersState>(initialFilters);
   const [autoRefresh, setAutoRefresh] = useState(true);
-  const [intervalMs, setIntervalMs] = useState(3000);
+  const [intervalMs, setIntervalMs] = useState(1000);
   const [autoScroll, setAutoScroll] = useState(true);
   const listRef = useRef<HTMLDivElement>(null);
 
@@ -54,15 +54,18 @@ function App() {
     keepPreviousData: true,
   });
 
+  const displayItems = useMemo(() => (data?.items ? [...data.items].reverse() : []), [data?.items]);
+
   useEffect(() => {
-    if (autoScroll && data?.items?.length) {
-      requestAnimationFrame(() => {
-        if (listRef.current) {
-          listRef.current.scrollTo({ top: 0, behavior: "smooth" });
-        }
-      });
-    }
-  }, [data, autoScroll]);
+    if (!autoScroll || displayItems.length === 0) return;
+
+    requestAnimationFrame(() => {
+      const container = listRef.current;
+      if (container) {
+        container.scrollTo({ top: container.scrollHeight, behavior: "smooth" });
+      }
+    });
+  }, [displayItems, autoScroll]);
 
   const queryClient = useQueryClient();
   const deleteMutation = useMutation({
@@ -127,7 +130,7 @@ function App() {
           
           {isError && (
             <div id="error-state" className="flex h-full items-center justify-center text-red-400 gap-2">
-              <AlertCircle className="h-5 w-5" />
+              <AlertCircle id="error-state-icon" className="h-5 w-5" />
               <span id="error-state-text">Failed to load logs</span>
             </div>
           )}
@@ -142,7 +145,7 @@ function App() {
           {data && data.items.length > 0 && (
             <LogTable
               id="log-table-section"
-              items={data.items}
+              items={displayItems}
               onCopy={handleCopy}
               onDelete={(id) => deleteMutation.mutate(id)}
             />

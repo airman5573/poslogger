@@ -14,9 +14,13 @@ const toneClass: Record<NonNullable<BadgeProps["tone"]>, string> = {
 };
 
 export const Badge = React.forwardRef<HTMLSpanElement, BadgeProps>(
-  ({ className, tone = "default", ...props }, ref) => {
+  ({ className, tone = "default", id, ...props }, ref) => {
+    const generatedId = React.useId();
+    const resolvedId = id ?? `badge-${generatedId}`;
+
     return (
       <span
+        id={resolvedId}
         ref={ref}
         className={cn(
           "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium",

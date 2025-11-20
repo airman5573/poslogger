@@ -40,7 +40,7 @@ export function Filters({ id, value, onChange, onReset }: Props) {
       <div id="filters-top-row" className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div id="filters-search-levels" className="flex flex-1 items-center gap-2">
           <div id="filters-search-wrapper" className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+            <Search id="filters-search-icon" className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
             <Input
               id="filters-search-input"
               value={value.q}
@@ -75,7 +75,7 @@ export function Filters({ id, value, onChange, onReset }: Props) {
             onClick={onReset}
             className="text-slate-400 hover:text-white"
           >
-            <X className="mr-2 h-3 w-3" />
+            <X id="filters-reset-icon" className="mr-2 h-3 w-3" />
             초기화
           </Button>
         </div>
@@ -84,7 +84,7 @@ export function Filters({ id, value, onChange, onReset }: Props) {
       {/* Bottom Row: Detailed Filters */}
       <div id="filters-grid" className="grid grid-cols-2 gap-3 md:grid-cols-5">
         <div id="label-filter" className="relative col-span-1">
-          <Tag className="absolute left-3 top-1/2 h-3 w-3 -translate-y-1/2 text-slate-500" />
+          <Tag id="label-filter-icon" className="absolute left-3 top-1/2 h-3 w-3 -translate-y-1/2 text-slate-500" />
           <Input
             id="label-input"
             placeholder="Label (콤마 구분)"
@@ -99,7 +99,7 @@ export function Filters({ id, value, onChange, onReset }: Props) {
           />
         </div>
         <div id="source-filter" className="relative col-span-1">
-          <Globe className="absolute left-3 top-1/2 h-3 w-3 -translate-y-1/2 text-slate-500" />
+          <Globe id="source-filter-icon" className="absolute left-3 top-1/2 h-3 w-3 -translate-y-1/2 text-slate-500" />
           <Input
             id="source-input"
             placeholder="Source (콤마 구분)"
@@ -114,7 +114,7 @@ export function Filters({ id, value, onChange, onReset }: Props) {
           />
         </div>
         <div id="start-filter" className="relative col-span-1">
-          <Calendar className="absolute left-3 top-1/2 h-3 w-3 -translate-y-1/2 text-slate-500" />
+          <Calendar id="start-filter-icon" className="absolute left-3 top-1/2 h-3 w-3 -translate-y-1/2 text-slate-500" />
           <Input
             id="start-input"
             type="datetime-local"
@@ -124,7 +124,7 @@ export function Filters({ id, value, onChange, onReset }: Props) {
           />
         </div>
         <div id="end-filter" className="relative col-span-1">
-          <Calendar className="absolute left-3 top-1/2 h-3 w-3 -translate-y-1/2 text-slate-500" />
+          <Calendar id="end-filter-icon" className="absolute left-3 top-1/2 h-3 w-3 -translate-y-1/2 text-slate-500" />
           <Input
             id="end-input"
             type="datetime-local"
@@ -134,7 +134,7 @@ export function Filters({ id, value, onChange, onReset }: Props) {
           />
         </div>
         <div id="limit-filter" className="relative col-span-1">
-          <ListFilter className="absolute left-3 top-1/2 h-3 w-3 -translate-y-1/2 text-slate-500" />
+          <ListFilter id="limit-filter-icon" className="absolute left-3 top-1/2 h-3 w-3 -translate-y-1/2 text-slate-500" />
           <Select
             id="limit-select"
             value={String(value.limit)}

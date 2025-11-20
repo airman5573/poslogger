@@ -24,9 +24,11 @@ export function Toolbar({
   onToggleScroll,
   id,
 }: Props) {
+  const toolbarId = id ?? "toolbar";
+
   return (
     <div
-      id={id ?? "toolbar"}
+      id={toolbarId}
       className="flex items-center gap-2 bg-slate-900/50 rounded-lg p-1 border border-slate-800"
     >
       <Button
@@ -37,12 +39,16 @@ export function Toolbar({
         className={autoRefresh ? "bg-emerald-600 hover:bg-emerald-700" : "text-slate-400 hover:text-slate-200"}
         title="Auto Refresh"
       >
-        {autoRefresh ? <Pause className="h-4 w-4 mr-2" /> : <Play className="h-4 w-4 mr-2" />}
+        {autoRefresh ? (
+          <Pause id={`${toolbarId}-pause-icon`} className="h-4 w-4 mr-2" />
+        ) : (
+          <Play id={`${toolbarId}-play-icon`} className="h-4 w-4 mr-2" />
+        )}
         {autoRefresh ? "Live" : "Paused"}
       </Button>
 
       <div id="toolbar-interval-control" className="flex items-center gap-1 px-2 border-l border-slate-800">
-        <Clock className="h-3 w-3 text-slate-500" />
+        <Clock id={`${toolbarId}-interval-icon`} className="h-3 w-3 text-slate-500" />
         <Input
           id="toolbar-interval-input"
           type="number"
@@ -65,7 +71,7 @@ export function Toolbar({
         className={autoScroll ? "bg-sky-900/50 text-sky-400" : "text-slate-400 hover:text-slate-200"}
         title="Auto Scroll"
       >
-        <ArrowDownCircle className="h-4 w-4" />
+        <ArrowDownCircle id={`${toolbarId}-auto-scroll-icon`} className="h-4 w-4" />
       </Button>
 
       <Button
@@ -76,7 +82,7 @@ export function Toolbar({
         title="Refresh Now"
         className="text-slate-400 hover:text-white"
       >
-        <RotateCcw className="h-4 w-4" />
+        <RotateCcw id={`${toolbarId}-refresh-icon`} className="h-4 w-4" />
       </Button>
     </div>
   );
