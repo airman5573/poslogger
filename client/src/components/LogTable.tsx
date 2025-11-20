@@ -92,7 +92,7 @@ function LogRow({
           </div>
         </td>
         <td id={`${rowId}-actions-cell`} className="p-3 align-top text-right">
-          <div id={`${rowId}-actions`} className="flex items-center justify-end gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+          <div id={`${rowId}-actions`} className="flex items-center justify-end gap-1">
             <Button
               id={`${rowId}-copy-button`}
               variant="ghost"
