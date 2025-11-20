@@ -3,10 +3,11 @@ import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { atomDark } from "react-syntax-highlighter/dist/esm/styles/prism";
 
 type Props = {
+  id?: string;
   context: string | null;
 };
 
-export function LogContextViewer({ context }: Props) {
+export function LogContextViewer({ id, context }: Props) {
   if (!context) return null;
 
   let formatted = context;
@@ -16,9 +17,11 @@ export function LogContextViewer({ context }: Props) {
     // keep raw
   }
 
+  const viewerId = id ?? "log-context-viewer";
+
   return (
-    <div className="mt-2 rounded-lg bg-slate-900 border border-slate-800">
-      <SyntaxHighlighter language="json" style={atomDark} customStyle={{ margin: 0 }}>
+    <div id={viewerId} className="mt-2 rounded-lg bg-slate-900 border border-slate-800">
+      <SyntaxHighlighter id={`${viewerId}-code`} language="json" style={atomDark} customStyle={{ margin: 0 }}>
         {formatted}
       </SyntaxHighlighter>
     </div>

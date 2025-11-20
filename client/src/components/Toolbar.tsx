@@ -4,6 +4,7 @@ import React from "react";
 import { Play, Pause, RotateCcw, ArrowDownCircle, Clock } from "lucide-react";
 
 type Props = {
+  id?: string;
   autoRefresh: boolean;
   intervalMs: number;
   onToggleRefresh: () => void;
@@ -21,10 +22,15 @@ export function Toolbar({
   onRefresh,
   autoScroll,
   onToggleScroll,
+  id,
 }: Props) {
   return (
-    <div className="flex items-center gap-2 bg-slate-900/50 rounded-lg p-1 border border-slate-800">
+    <div
+      id={id ?? "toolbar"}
+      className="flex items-center gap-2 bg-slate-900/50 rounded-lg p-1 border border-slate-800"
+    >
       <Button
+        id="toolbar-auto-refresh"
         variant={autoRefresh ? "default" : "ghost"}
         size="sm"
         onClick={onToggleRefresh}
@@ -35,9 +41,10 @@ export function Toolbar({
         {autoRefresh ? "Live" : "Paused"}
       </Button>
 
-      <div className="flex items-center gap-1 px-2 border-l border-slate-800">
-         <Clock className="h-3 w-3 text-slate-500" />
-         <Input
+      <div id="toolbar-interval-control" className="flex items-center gap-1 px-2 border-l border-slate-800">
+        <Clock className="h-3 w-3 text-slate-500" />
+        <Input
+          id="toolbar-interval-input"
           type="number"
           min={500}
           max={30000}
@@ -45,12 +52,13 @@ export function Toolbar({
           onChange={(e) => onIntervalChange(Number(e.target.value))}
           className="h-7 w-16 text-xs bg-transparent border-none focus-visible:ring-0 px-0 text-center"
         />
-        <span className="text-xs text-slate-500">ms</span>
+        <span id="toolbar-interval-unit" className="text-xs text-slate-500">ms</span>
       </div>
 
-      <div className="h-4 w-px bg-slate-800 mx-1" />
+      <div id="toolbar-divider" className="h-4 w-px bg-slate-800 mx-1" />
 
       <Button
+        id="toolbar-auto-scroll"
         variant={autoScroll ? "secondary" : "ghost"}
         size="icon"
         onClick={onToggleScroll}
@@ -59,8 +67,9 @@ export function Toolbar({
       >
         <ArrowDownCircle className="h-4 w-4" />
       </Button>
-      
+
       <Button
+        id="toolbar-refresh-now"
         variant="ghost"
         size="icon"
         onClick={onRefresh}

@@ -58,7 +58,7 @@ function App() {
     if (autoScroll && data?.items?.length) {
       requestAnimationFrame(() => {
         if (listRef.current) {
-           listRef.current.scrollTo({ top: 0, behavior: "smooth" });
+          listRef.current.scrollTo({ top: 0, behavior: "smooth" });
         }
       });
     }
@@ -76,22 +76,23 @@ function App() {
   };
 
   return (
-    <div className="flex h-screen flex-col bg-slate-950 text-slate-50 overflow-hidden font-sans selection:bg-sky-500/30">
+    <div id="app-container" className="flex h-screen flex-col bg-slate-950 text-slate-50 overflow-hidden font-sans selection:bg-sky-500/30">
       {/* Header Section */}
-      <header className="flex-none border-b border-slate-800 bg-slate-950/80 backdrop-blur-md z-50">
-        <div className="flex flex-col gap-4 px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="flex flex-col">
-                <h1 className="text-lg font-bold tracking-tight text-slate-100">External Logger</h1>
-                <span className="text-[10px] uppercase tracking-wider text-slate-500">poslog.store</span>
+      <header id="app-header" className="flex-none border-b border-slate-800 bg-slate-950/80 backdrop-blur-md z-50">
+        <div id="header-content" className="flex flex-col gap-4 px-6 py-4">
+          <div id="header-top-row" className="flex items-center justify-between">
+            <div id="brand-block" className="flex items-center gap-3">
+              <div id="brand-text" className="flex flex-col">
+                <h1 id="app-title" className="text-lg font-bold tracking-tight text-slate-100">External Logger</h1>
+                <span id="app-subtitle" className="text-[10px] uppercase tracking-wider text-slate-500">poslog.store</span>
               </div>
-              <Badge variant="outline" className="ml-2 border-slate-700 text-slate-400">
+              <Badge id="app-version-badge" variant="outline" className="ml-2 border-slate-700 text-slate-400">
                 v1.0
               </Badge>
             </div>
             
             <Toolbar
+              id="toolbar-controls"
               autoRefresh={autoRefresh}
               intervalMs={intervalMs}
               onIntervalChange={setIntervalMs}
@@ -103,6 +104,7 @@ function App() {
           </div>
 
           <Filters
+            id="filters-panel"
             value={filters}
             onChange={setFilters}
             onReset={() => setFilters(initialFilters)}
@@ -111,30 +113,35 @@ function App() {
       </header>
 
       {/* Main Log Area */}
-      <main className="flex-1 overflow-hidden relative bg-slate-950">
-        <div ref={listRef} className="h-full w-full overflow-auto p-4 scrollbar-thin scrollbar-thumb-slate-800 scrollbar-track-transparent">
+      <main id="log-area" className="flex-1 overflow-hidden relative bg-slate-950">
+        <div
+          id="log-scroll-container"
+          ref={listRef}
+          className="h-full w-full overflow-auto p-4 scrollbar-thin scrollbar-thumb-slate-800 scrollbar-track-transparent"
+        >
           {isLoading && !data && (
-             <div className="flex h-full items-center justify-center text-slate-500">
-               Loading logs...
-             </div>
+            <div id="loading-state" className="flex h-full items-center justify-center text-slate-500">
+              <span id="loading-state-text">Loading logs...</span>
+            </div>
           )}
           
           {isError && (
-            <div className="flex h-full items-center justify-center text-red-400 gap-2">
+            <div id="error-state" className="flex h-full items-center justify-center text-red-400 gap-2">
               <AlertCircle className="h-5 w-5" />
-              Failed to load logs
+              <span id="error-state-text">Failed to load logs</span>
             </div>
           )}
 
           {!isLoading && data && data.items.length === 0 && (
-             <div className="flex h-full flex-col items-center justify-center text-slate-500 gap-2">
-               <div className="text-4xl">📭</div>
-               <p>No logs found matching your filters.</p>
-             </div>
+            <div id="empty-state" className="flex h-full flex-col items-center justify-center text-slate-500 gap-2">
+              <div id="empty-state-icon" className="text-4xl">📭</div>
+              <p id="empty-state-text">No logs found matching your filters.</p>
+            </div>
           )}
 
           {data && data.items.length > 0 && (
             <LogTable
+              id="log-table-section"
               items={data.items}
               onCopy={handleCopy}
               onDelete={(id) => deleteMutation.mutate(id)}
@@ -143,14 +150,20 @@ function App() {
         </div>
 
         {/* Status Bar */}
-        <div className="absolute bottom-0 left-0 right-0 flex items-center justify-between border-t border-slate-800 bg-slate-900/90 px-4 py-1.5 text-[11px] text-slate-400 backdrop-blur">
-          <div className="flex items-center gap-4">
-            <span>Total: <span className="text-slate-200 font-medium">{data?.total ?? 0}</span></span>
-            <span>Showing: <span className="text-slate-200 font-medium">{data?.items.length ?? 0}</span></span>
+        <div
+          id="status-bar"
+          className="absolute bottom-0 left-0 right-0 flex items-center justify-between border-t border-slate-800 bg-slate-900/90 px-4 py-1.5 text-[11px] text-slate-400 backdrop-blur"
+        >
+          <div id="status-metrics" className="flex items-center gap-4">
+            <span id="status-total">Total: <span id="status-total-value" className="text-slate-200 font-medium">{data?.total ?? 0}</span></span>
+            <span id="status-showing">Showing: <span id="status-showing-value" className="text-slate-200 font-medium">{data?.items.length ?? 0}</span></span>
           </div>
-          <div className="flex items-center gap-2">
-            <div className={`h-1.5 w-1.5 rounded-full ${isFetching ? 'bg-sky-400 animate-pulse' : 'bg-emerald-500'}`} />
-            <span>{isFetching ? "Syncing..." : "Connected"}</span>
+          <div id="status-connection" className="flex items-center gap-2">
+            <div
+              id="status-indicator"
+              className={`h-1.5 w-1.5 rounded-full ${isFetching ? 'bg-sky-400 animate-pulse' : 'bg-emerald-500'}`}
+            />
+            <span id="status-text">{isFetching ? "Syncing..." : "Connected"}</span>
           </div>
         </div>
       </main>
