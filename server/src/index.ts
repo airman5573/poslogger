@@ -14,11 +14,27 @@ const maxBodyBytes = process.env.MAX_BODY_BYTES ? Number(process.env.MAX_BODY_BY
 const corsOrigin = process.env.CORS_ORIGIN || "*";
 const staticDir = process.env.CLIENT_DIST || path.resolve(__dirname, "../client-dist");
 
+// Allow every origin/header/method, and short-circuit OPTIONS so preflight never fails
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE,OPTIONS");
+  res.header(
+    "Access-Control-Allow-Headers",
+    req.header("Access-Control-Request-Headers") || "*"
+  );
+
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(204);
+  }
+
+  return next();
+});
+
 app.use(
   cors({
     origin: corsOrigin === "*" ? "*" : corsOrigin.split(","),
-    methods: ["GET", "POST", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
+    methods: ["GET", "POST", "DELETE", "OPTIONS", "PUT", "PATCH"],
+    allowedHeaders: "*",
   })
 );
 app.use(express.json({ limit: maxBodyBytes }));
