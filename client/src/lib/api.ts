@@ -30,6 +30,14 @@ export async function deleteLog(id: number) {
   }
 }
 
+export async function deleteAllLogs() {
+  const res = await fetch(`${API_BASE}/api/logs`, { method: "DELETE" });
+  if (!res.ok) {
+    throw new Error(`Failed to delete all logs: ${res.status}`);
+  }
+  return res.json() as Promise<{ deleted: number }>;
+}
+
 export async function sendTestLog(item: Partial<LogItem>) {
   const res = await fetch(`${API_BASE}/api/logs`, {
     method: "POST",

@@ -3,10 +3,11 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Filters } from "./components/Filters";
 import { LogTable } from "./components/LogTable";
 import { Toolbar } from "./components/Toolbar";
-import { deleteLog, fetchLogs } from "./lib/api";
+import { deleteAllLogs, deleteLog, fetchLogs } from "./lib/api";
 import { LogItem } from "./types";
 import { Badge } from "./components/ui/badge";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, Trash2 } from "lucide-react";
+import { Button } from "./components/ui/button";
 
 type FiltersState = {
   levels: string[];
@@ -18,7 +19,7 @@ type FiltersState = {
   limit: number;
 };
 
-const initialFilters: FiltersState = {
+const createInitialFilters = (): FiltersState => ({
   levels: ["ERROR", "WARN", "INFO", "DEBUG"],
   labels: [],
   sources: [],
@@ -26,10 +27,10 @@ const initialFilters: FiltersState = {
   start: "",
   end: "",
   limit: 200,
-};
+});
 
 function App() {
-  const [filters, setFilters] = useState<FiltersState>(initialFilters);
+  const [filters, setFilters] = useState<FiltersState>(() => createInitialFilters());
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [intervalMs, setIntervalMs] = useState(1000);
   const [autoScroll, setAutoScroll] = useState(true);
@@ -51,7 +52,7 @@ function App() {
         offset: 0,
       }),
     refetchInterval: autoRefresh ? intervalMs : false,
-    keepPreviousData: true,
+    placeholderData: (prev) => prev,
   });
 
   const displayItems = useMemo(() => (data?.items ? [...data.items].reverse() : []), [data?.items]);
@@ -68,14 +69,33 @@ function App() {
   }, [displayItems, autoScroll]);
 
   const queryClient = useQueryClient();
+
+  const handleReset = () => {
+    const defaults = createInitialFilters();
+    setFilters(defaults);
+    // Ensure a new fetch even if state already matches defaults.
+    queryClient.invalidateQueries({ queryKey: ["logs"] });
+  };
+
   const deleteMutation = useMutation({
     mutationFn: (id: number) => deleteLog(id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["logs"] }),
+  });
+
+  const deleteAllMutation = useMutation({
+    mutationFn: () => deleteAllLogs(),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["logs"] }),
   });
 
   const handleCopy = async (item: LogItem) => {
     const text = JSON.stringify(item, null, 2);
     await navigator.clipboard.writeText(text);
+  };
+
+  const handleDeleteAll = () => {
+    const confirmed = window.confirm("모든 로그를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.");
+    if (!confirmed) return;
+    deleteAllMutation.mutate();
   };
 
   return (
@@ -93,24 +113,38 @@ function App() {
                 v1.0
               </Badge>
             </div>
-            
-            <Toolbar
-              id="toolbar-controls"
-              autoRefresh={autoRefresh}
-              intervalMs={intervalMs}
-              onIntervalChange={setIntervalMs}
-              onToggleRefresh={() => setAutoRefresh((v) => !v)}
-              onRefresh={() => refetch()}
-              autoScroll={autoScroll}
-              onToggleScroll={() => setAutoScroll((v) => !v)}
-            />
+
+            <div id="header-actions" className="flex items-center gap-2">
+              <Button
+                id="log-table-section-delete-all-button"
+                variant="destructive"
+                size="sm"
+                onClick={handleDeleteAll}
+                disabled={deleteAllMutation.isPending}
+                className="shadow-sm"
+              >
+                <Trash2 id="log-table-section-delete-all-icon" className="h-4 w-4 mr-1.5" />
+                모든 로그 삭제
+              </Button>
+
+              <Toolbar
+                id="toolbar-controls"
+                autoRefresh={autoRefresh}
+                intervalMs={intervalMs}
+                onIntervalChange={setIntervalMs}
+                onToggleRefresh={() => setAutoRefresh((v) => !v)}
+                onRefresh={() => refetch()}
+                autoScroll={autoScroll}
+                onToggleScroll={() => setAutoScroll((v) => !v)}
+              />
+            </div>
           </div>
 
           <Filters
             id="filters-panel"
             value={filters}
             onChange={setFilters}
-            onReset={() => setFilters(initialFilters)}
+            onReset={handleReset}
           />
         </div>
       </header>

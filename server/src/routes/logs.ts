@@ -1,6 +1,6 @@
 import { Router, Request, Response } from "express";
 import { z } from "zod";
-import { deleteLogById, insertLog, listLogs } from "../db.js";
+import { deleteAllLogs, deleteLogById, insertLog, listLogs } from "../db.js";
 
 const router = Router();
 
@@ -87,6 +87,16 @@ router.get("/", (req: Request, res: Response) => {
   } catch (err) {
     console.error("listLogs error", err);
     return res.status(500).json({ error: "Failed to fetch logs" });
+  }
+});
+
+router.delete("/", (_req: Request, res: Response) => {
+  try {
+    const deleted = deleteAllLogs();
+    return res.status(200).json({ deleted });
+  } catch (err) {
+    console.error("deleteAllLogs error", err);
+    return res.status(500).json({ error: "Failed to delete logs" });
   }
 });
 
