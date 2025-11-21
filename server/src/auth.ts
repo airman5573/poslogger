@@ -12,7 +12,8 @@ const JWT_SECRET = (() => {
 })();
 const COOKIE_NAME = process.env.AUTH_COOKIE_NAME || "poslog_auth";
 const parsedTtl = Number(process.env.AUTH_TTL_SECONDS);
-const TOKEN_TTL_SECONDS = Number.isFinite(parsedTtl) && parsedTtl > 0 ? parsedTtl : 15 * 60;
+const DEFAULT_TOKEN_TTL_SECONDS = 24 * 60 * 60; // 24 hours
+const TOKEN_TTL_SECONDS = Number.isFinite(parsedTtl) && parsedTtl > 0 ? parsedTtl : DEFAULT_TOKEN_TTL_SECONDS;
 
 if (!AUTH_PASSWORD) {
   throw new Error("AUTH_PASSWORD (or VIEWER_PASSWORD / LOG_VIEW_PASSWORD) is required for auth");

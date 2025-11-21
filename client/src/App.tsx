@@ -160,18 +160,49 @@ function App() {
     queryClient.invalidateQueries({ queryKey: ["logs"] });
   };
 
+  const reloadOnUnauthorized = (error: unknown) => {
+    if (error instanceof HttpError && error.status === 401) {
+      window.location.reload();
+    }
+  };
+
   const deleteMutation = useMutation({
     mutationFn: (id: number) => deleteLog(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["logs"] }),
+    onError: reloadOnUnauthorized,
   });
 
   const deleteAllMutation = useMutation({
     mutationFn: () => deleteAllLogs(),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["logs"] }),
+    onError: reloadOnUnauthorized,
   });
 
+  const parseJsonValue = (value?: string | null) => {
+    if (!value) return { ok: false as const, parsed: null as unknown };
+    try {
+      return { ok: true as const, parsed: JSON.parse(value) };
+    } catch {
+      return { ok: false as const, parsed: null as unknown };
+    }
+  };
+
+  const buildCopyText = (item: LogItem) => {
+    const contextJson = parseJsonValue(item.context);
+    if (contextJson.ok) {
+      return JSON.stringify(contextJson.parsed, null, 2);
+    }
+
+    const messageJson = parseJsonValue(item.message);
+    if (messageJson.ok) {
+      return JSON.stringify(messageJson.parsed, null, 2);
+    }
+
+    return item.context || item.message;
+  };
+
   const handleCopy = async (item: LogItem) => {
-    const text = JSON.stringify(item, null, 2);
+    const text = buildCopyText(item);
     await navigator.clipboard.writeText(text);
   };
   const handleCopyLink = async (item: LogItem) => {
@@ -224,7 +255,7 @@ function App() {
             <p className="text-[10px] uppercase tracking-[0.3em] text-slate-500">poslog.store</p>
             <h1 className="text-2xl font-semibold text-slate-50">로그 보기는 보호되어 있어요</h1>
             <p className="text-sm text-slate-400">
-              비밀번호를 한 번만 입력하면 15분 동안 유지돼요. 공개 주소지만 내부자만 접근할 수 있도록 잠궈두었습니다.
+              비밀번호를 한 번만 입력하면 24시간 동안 유지돼요. 공개 주소지만 내부자만 접근할 수 있도록 잠궈두었습니다.
             </p>
           </div>
 
@@ -257,7 +288,7 @@ function App() {
           </form>
 
           <p className="mt-6 text-xs text-slate-500">
-            세션은 15분 간 유지되며, 브라우저를 닫으면 자동으로 만료됩니다.
+            세션은 24시간 유지되며, 브라우저를 닫으면 자동으로 만료됩니다.
           </p>
         </div>
       </div>
