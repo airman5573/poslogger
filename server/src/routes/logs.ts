@@ -1,5 +1,6 @@
 import { Router, Request, Response } from "express";
 import { z } from "zod";
+import { requireAuth } from "../auth.js";
 import { deleteAllLogs, deleteLogById, insertLog, listLogs } from "../db.js";
 
 const router = Router();
@@ -54,6 +55,9 @@ router.post("/", (req: Request, res: Response) => {
     return res.status(500).json({ error: "Failed to insert log" });
   }
 });
+
+// All routes below require auth (viewing/deleting logs). Ingesting logs (POST) remains open.
+router.use(requireAuth);
 
 router.get("/", (req: Request, res: Response) => {
   const parsed = listSchema.safeParse(req.query);

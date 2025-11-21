@@ -20,3 +20,8 @@ export type LogQuery = {
   offset?: number;
   cursor?: string;
 };
+
+export type AuthStatus = {
+  authenticated: boolean;
+  expiresAt?: number;
+};

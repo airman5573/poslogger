@@ -1,9 +1,11 @@
 import "./load-env.js";
 import express from "express";
 import cors from "cors";
+import cookieParser from "cookie-parser";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import authRouter from "./routes/auth.js";
 import logsRouter from "./routes/logs.js";
 
 const app = express();
@@ -37,10 +39,12 @@ app.use(
     allowedHeaders: "*",
   })
 );
+app.use(cookieParser());
 app.use(express.json({ limit: maxBodyBytes }));
 
 app.get("/health", (_req, res) => res.json({ status: "ok" }));
 
+app.use("/api/auth", authRouter);
 app.use("/api/logs", logsRouter);
 
 if (fs.existsSync(staticDir)) {
