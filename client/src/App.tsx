@@ -113,8 +113,6 @@ function App() {
     });
   }, [displayItems, autoScroll]);
 
-  const queryClient = useQueryClient();
-
   const handleReset = () => {
     const defaults = createInitialFilters();
     setFilters(defaults);
