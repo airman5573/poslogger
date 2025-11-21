@@ -36,12 +36,25 @@ function App() {
   const [autoScroll, setAutoScroll] = useState(true);
   const [password, setPassword] = useState("");
   const [now, setNow] = useState(Date.now());
+  const [deepLinkLogId, setDeepLinkLogId] = useState<number | null>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
 
   useEffect(() => {
     const timer = setInterval(() => setNow(Date.now()), 10_000);
     return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const logParam = params.get("log");
+    if (logParam) {
+      const parsed = Number(logParam);
+      if (!Number.isNaN(parsed)) {
+        setDeepLinkLogId(parsed);
+        setAutoScroll(false);
+      }
+    }
   }, []);
 
   const { data: authStatus, isLoading: isAuthLoading } = useQuery({
@@ -113,6 +126,21 @@ function App() {
     });
   }, [displayItems, autoScroll]);
 
+  useEffect(() => {
+    if (!deepLinkLogId) return;
+
+    const existsInList = displayItems.some((item) => item.id === deepLinkLogId);
+    if (!existsInList) return;
+
+    const rowElement = document.getElementById(`log-table-section-row-${deepLinkLogId}`);
+    if (rowElement) {
+      requestAnimationFrame(() => {
+        rowElement.scrollIntoView({ behavior: "smooth", block: "center" });
+      });
+      setDeepLinkLogId(null);
+    }
+  }, [deepLinkLogId, displayItems]);
+
   const handleReset = () => {
     const defaults = createInitialFilters();
     setFilters(defaults);
@@ -133,6 +161,11 @@ function App() {
   const handleCopy = async (item: LogItem) => {
     const text = JSON.stringify(item, null, 2);
     await navigator.clipboard.writeText(text);
+  };
+  const handleCopyLink = async (item: LogItem) => {
+    const url = new URL(window.location.href);
+    url.searchParams.set("log", String(item.id));
+    await navigator.clipboard.writeText(url.toString());
   };
 
   const handleDeleteAll = () => {
@@ -317,7 +350,9 @@ function App() {
               id="log-table-section"
               items={displayItems}
               onCopy={handleCopy}
+              onCopyLink={handleCopyLink}
               onDelete={(id) => deleteMutation.mutate(id)}
+              autoExpandLogId={deepLinkLogId}
             />
           )}
         </div>

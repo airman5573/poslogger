@@ -3,7 +3,7 @@ import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import { LogContextViewer } from "./LogContextViewer";
 import { cn } from "../lib/utils";
-import { Copy, Trash2, ChevronRight, ChevronDown } from "lucide-react";
+import { Copy, Trash2, ChevronRight, ChevronDown, Link2 } from "lucide-react";
 import React, { useState } from "react";
 
 type Props = {
@@ -11,6 +11,8 @@ type Props = {
   items: LogItem[];
   onDelete: (id: number) => void;
   onCopy: (item: LogItem) => void;
+  onCopyLink: (item: LogItem) => void;
+  autoExpandLogId?: number | null;
 };
 
 const levelTone = (level: string): NonNullable<Parameters<typeof Badge>[0]["tone"]> => {
@@ -26,13 +28,17 @@ function LogRow({
   onDelete,
   onCopy,
   baseId,
+  onCopyLink,
+  autoExpand,
 }: {
   item: LogItem;
   onDelete: (id: number) => void;
   onCopy: (item: LogItem) => void;
   baseId: string;
+  onCopyLink: (item: LogItem) => void;
+  autoExpand: boolean;
 }) {
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(() => autoExpand);
   const rowId = `${baseId}-row-${item.id}`;
 
   return (
@@ -94,6 +100,16 @@ function LogRow({
         <td id={`${rowId}-actions-cell`} className="p-3 align-top text-right">
           <div id={`${rowId}-actions`} className="flex items-center justify-end gap-1">
             <Button
+              id={`${rowId}-copy-link-button`}
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              onClick={() => onCopyLink(item)}
+              title="Copy link"
+            >
+              <Link2 id={`${rowId}-copy-link-icon`} className="h-4 w-4 text-slate-400" />
+            </Button>
+            <Button
               id={`${rowId}-copy-button`}
               variant="ghost"
               size="icon"
@@ -129,7 +145,7 @@ function LogRow({
   );
 }
 
-export function LogTable({ id, items, onDelete, onCopy }: Props) {
+export function LogTable({ id, items, onDelete, onCopy, onCopyLink, autoExpandLogId }: Props) {
   const tableId = id ?? "logs-table-wrapper";
 
   return (
@@ -146,7 +162,15 @@ export function LogTable({ id, items, onDelete, onCopy }: Props) {
         </thead>
         <tbody id={`${tableId}-body`} className="divide-y divide-slate-800">
           {items.map((item) => (
-            <LogRow key={item.id} item={item} onDelete={onDelete} onCopy={onCopy} baseId={tableId} />
+            <LogRow
+              key={item.id}
+              item={item}
+              onDelete={onDelete}
+              onCopy={onCopy}
+              onCopyLink={onCopyLink}
+              baseId={tableId}
+              autoExpand={autoExpandLogId === item.id}
+            />
           ))}
         </tbody>
       </table>
