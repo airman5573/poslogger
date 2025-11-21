@@ -3,10 +3,10 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Filters } from "./components/Filters";
 import { LogTable } from "./components/LogTable";
 import { Toolbar } from "./components/Toolbar";
-import { deleteAllLogs, deleteLog, fetchAuthStatus, fetchLogs, HttpError, login, logout } from "./lib/api";
+import { deleteAllLogs, deleteLog, fetchAuthStatus, fetchLogs, HttpError, login, logout, refreshAuth } from "./lib/api";
 import { LogItem } from "./types";
 import { Badge } from "./components/ui/badge";
-import { AlertCircle, Trash2 } from "lucide-react";
+import { AlertCircle, RefreshCcw, Trash2 } from "lucide-react";
 import { Button } from "./components/ui/button";
 
 type FiltersState = {
@@ -85,6 +85,18 @@ function App() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["auth-status"] });
       queryClient.removeQueries({ queryKey: ["logs"] });
+    },
+  });
+
+  const refreshAuthMutation = useMutation({
+    mutationFn: () => refreshAuth(),
+    onSuccess: (data) => {
+      queryClient.setQueryData(["auth-status"], data);
+    },
+    onError: (err) => {
+      if (err instanceof HttpError && err.status === 401) {
+        queryClient.setQueryData(["auth-status"], { authenticated: false });
+      }
     },
   });
 
@@ -282,6 +294,17 @@ function App() {
                 className="shadow-sm"
               >
                 로그아웃
+              </Button>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => refreshAuthMutation.mutate()}
+                disabled={refreshAuthMutation.isPending}
+                className="shadow-sm"
+              >
+                <RefreshCcw className="h-4 w-4 mr-1" />
+                {refreshAuthMutation.isPending ? "갱신 중..." : "토큰 갱신"}
               </Button>
 
               <Button

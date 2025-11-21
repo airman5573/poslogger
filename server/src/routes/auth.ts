@@ -33,4 +33,16 @@ router.post("/logout", (_req, res) => {
   return res.json({ authenticated: false });
 });
 
+router.post("/refresh", (req, res) => {
+  const status = readAuthStatus(req);
+
+  if (!status.authenticated) {
+    clearAuth(res);
+    return res.status(401).json({ authenticated: false });
+  }
+
+  issueAuth(res);
+  return res.json({ authenticated: true, expiresAt: Date.now() + getAuthTtlMs() });
+});
+
 export default router;

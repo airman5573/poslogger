@@ -96,6 +96,14 @@ export async function logout() {
   return handleResponse(res) as Promise<{ authenticated: boolean }>;
 }
 
+export async function refreshAuth() {
+  const res = await fetch(`${API_BASE}/api/auth/refresh`, {
+    method: "POST",
+    ...withCredentials,
+  });
+  return handleResponse(res) as Promise<{ authenticated: boolean; expiresAt: number }>;
+}
+
 export async function fetchAuthStatus(): Promise<AuthStatus> {
   const res = await fetch(`${API_BASE}/api/auth/status`, {
     ...withCredentials,
