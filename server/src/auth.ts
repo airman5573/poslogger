@@ -3,17 +3,19 @@ import jwt from "jsonwebtoken";
 
 const AUTH_PASSWORD =
   process.env.VIEWER_PASSWORD || process.env.AUTH_PASSWORD || process.env.LOG_VIEW_PASSWORD;
-const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_SECRET = (() => {
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+    throw new Error("JWT_SECRET is required for auth");
+  }
+  return secret;
+})();
 const COOKIE_NAME = process.env.AUTH_COOKIE_NAME || "poslog_auth";
 const parsedTtl = Number(process.env.AUTH_TTL_SECONDS);
 const TOKEN_TTL_SECONDS = Number.isFinite(parsedTtl) && parsedTtl > 0 ? parsedTtl : 15 * 60;
 
 if (!AUTH_PASSWORD) {
   throw new Error("AUTH_PASSWORD (or VIEWER_PASSWORD / LOG_VIEW_PASSWORD) is required for auth");
-}
-
-if (!JWT_SECRET) {
-  throw new Error("JWT_SECRET is required for auth");
 }
 
 const baseCookieOptions: CookieOptions = {
