@@ -42,7 +42,7 @@ export function Snackbar({ message, type = "success", duration = 3000, onClose }
   return (
     <div
       className={cn(
-        "fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[100] flex items-center gap-2 rounded-lg border px-4 py-3 shadow-lg backdrop-blur transition-all duration-200",
+        "fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[100] flex items-center gap-2 rounded-lg border px-4 py-3 shadow-lg backdrop-blur transition-all duration-200 min-w-[300px]",
         styleMap[type],
         isVisible ? "opacity-100 scale-100" : "opacity-0 scale-95"
       )}
@@ -87,7 +87,7 @@ export function SnackbarContainer({ snackbars, onRemove }: { snackbars: Snackbar
   return (
     <>
       {snackbars.map((snackbar, index) => (
-        <div key={snackbar.id} style={{ top: `calc(50% + ${index * 60}px)` }} className="fixed left-1/2 -translate-x-1/2 -translate-y-1/2 z-[100]">
+        <div key={snackbar.id} style={{ top: `calc(50% + ${index * 60}px)` }} className="fixed left-1/2 -translate-x-1/2 -translate-y-1/2 z-[100] min-w-[200px]">
           <Snackbar
             message={snackbar.message}
             type={snackbar.type}
