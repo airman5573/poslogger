@@ -62,7 +62,12 @@ function LogRow({ item, onDelete, onCopy }: { item: LogItem; onDelete: (id: numb
           </div>
         </td>
         <td className="p-3 align-top text-right">
-          <div className="flex items-center justify-end gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+          <div
+            className={cn(
+              "flex items-center justify-end gap-1 transition-opacity",
+              expanded ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+            )}
+          >
             <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => onCopy(item)} title="Copy JSON">
               <Copy className="h-4 w-4 text-slate-400" />
             </Button>
