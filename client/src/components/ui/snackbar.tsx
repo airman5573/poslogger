@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { cn } from "../../lib/utils";
 import { CheckCircle, XCircle, Info, AlertTriangle, X } from "lucide-react";
 
@@ -27,15 +27,17 @@ const styleMap = {
 
 export function Snackbar({ message, type = "success", duration = 3000, onClose }: SnackbarProps) {
   const [isVisible, setIsVisible] = useState(false);
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
 
   useEffect(() => {
     requestAnimationFrame(() => setIsVisible(true));
     const timer = setTimeout(() => {
       setIsVisible(false);
-      setTimeout(onClose, 200);
+      setTimeout(() => onCloseRef.current(), 200);
     }, duration);
     return () => clearTimeout(timer);
-  }, [duration, onClose]);
+  }, [duration]);
 
   const Icon = iconMap[type];
 
