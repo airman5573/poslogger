@@ -8,6 +8,7 @@ import { LogItem } from "./types";
 import { Badge } from "./components/ui/badge";
 import { AlertCircle, RefreshCcw, Trash2 } from "lucide-react";
 import { Button } from "./components/ui/button";
+import { SnackbarContainer, useSnackbar } from "./components/ui/snackbar";
 
 type FiltersState = {
   levels: string[];
@@ -39,6 +40,7 @@ function App() {
   const [deepLinkLogId, setDeepLinkLogId] = useState<number | null>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
+  const [snackbars, showSnackbar, removeSnackbar] = useSnackbar();
 
   useEffect(() => {
     const timer = setInterval(() => setNow(Date.now()), 10_000);
@@ -168,13 +170,19 @@ function App() {
 
   const deleteMutation = useMutation({
     mutationFn: (id: number) => deleteLog(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["logs"] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["logs"] });
+      showSnackbar("삭제 완료", "success");
+    },
     onError: reloadOnUnauthorized,
   });
 
   const deleteAllMutation = useMutation({
     mutationFn: () => deleteAllLogs(),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["logs"] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["logs"] });
+      showSnackbar("모든 로그 삭제 완료", "success");
+    },
     onError: reloadOnUnauthorized,
   });
 
@@ -204,11 +212,13 @@ function App() {
   const handleCopy = async (item: LogItem) => {
     const text = buildCopyText(item);
     await navigator.clipboard.writeText(text);
+    showSnackbar("복사 완료", "success");
   };
   const handleCopyLink = async (item: LogItem) => {
     const url = new URL(window.location.href);
     url.searchParams.set("log", String(item.id));
     await navigator.clipboard.writeText(url.toString());
+    showSnackbar("링크 복사 완료", "success");
   };
 
   const handleDeleteAll = () => {
@@ -436,6 +446,7 @@ function App() {
           </div>
         </div>
       </main>
+      <SnackbarContainer snackbars={snackbars} onRemove={removeSnackbar} />
     </div>
   );
 }
