@@ -138,3 +138,8 @@ export const deleteLogById = (id: number): boolean => {
   const info = db.prepare("DELETE FROM logs WHERE id = ?").run(id);
   return info.changes > 0;
 };
+
+export const deleteAllLogs = (): number => {
+  const info = db.prepare("DELETE FROM logs").run();
+  return info.changes;
+};

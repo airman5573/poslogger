@@ -1,15 +1,22 @@
 import { Router, Request, Response } from "express";
 import { z } from "zod";
-import { deleteLogById, insertLog, listLogs } from "../db.js";
+import { requireAuth } from "../auth.js";
+import { deleteAllLogs, deleteLogById, insertLog, listLogs } from "../db.js";
 
 const router = Router();
+
+const timestampSchema = z.preprocess(
+  (val: unknown) => (val === null || val === "" ? undefined : val),
+  z.string().datetime().optional()
+);
 
 const logSchema = z.object({
   level: z.string().min(1),
   label: z.string().min(1),
   message: z.string().min(1),
   context: z.any().optional(),
-  timestamp: z.string().datetime().optional(),
+  // Accept missing/empty/null timestamp; server will default to now().
+  timestamp: timestampSchema,
   source: z.string().optional(),
 });
 
@@ -23,12 +30,12 @@ const listSchema = z.object({
   limit: z
     .string()
     .optional()
-    .transform((v) => (v ? Number(v) : 200))
+    .transform((v: string | undefined) => (v ? Number(v) : 200))
     .pipe(z.number().int().min(1).max(1000)),
   offset: z
     .string()
     .optional()
-    .transform((v) => (v ? Number(v) : 0))
+    .transform((v: string | undefined) => (v ? Number(v) : 0))
     .pipe(z.number().int().min(0)),
   cursor: z.string().optional(),
   since_id: z.string().optional(),
@@ -48,6 +55,9 @@ router.post("/", (req: Request, res: Response) => {
     return res.status(500).json({ error: "Failed to insert log" });
   }
 });
+
+// All routes below require auth (viewing/deleting logs). Ingesting logs (POST) remains open.
+router.use(requireAuth);
 
 router.get("/", (req: Request, res: Response) => {
   const parsed = listSchema.safeParse(req.query);
@@ -81,6 +91,16 @@ router.get("/", (req: Request, res: Response) => {
   } catch (err) {
     console.error("listLogs error", err);
     return res.status(500).json({ error: "Failed to fetch logs" });
+  }
+});
+
+router.delete("/", (_req: Request, res: Response) => {
+  try {
+    const deleted = deleteAllLogs();
+    return res.status(200).json({ deleted });
+  } catch (err) {
+    console.error("deleteAllLogs error", err);
+    return res.status(500).json({ error: "Failed to delete logs" });
   }
 });
 
