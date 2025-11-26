@@ -75,23 +75,25 @@ function LogRow({
             )}
           </div>
         </td>
-        <td id={`${rowId}-message-cell`} className="p-3 align-top min-w-[300px]">
+        <td
+          id={`${rowId}-message-cell`}
+          className="p-3 align-top min-w-[300px] cursor-pointer"
+          onClick={() => setExpanded(!expanded)}
+        >
           <div id={`${rowId}-message-wrapper`} className="flex items-start gap-2">
-            <button
+            <span
               id={`${rowId}-expand-toggle`}
-              onClick={() => setExpanded(!expanded)}
-              className="mt-0.5 text-slate-500 hover:text-slate-300 focus:outline-none"
+              className="mt-0.5 text-slate-500"
             >
               {expanded ? (
                 <ChevronDown id={`${rowId}-collapse-icon`} className="h-4 w-4" />
               ) : (
                 <ChevronRight id={`${rowId}-expand-icon`} className="h-4 w-4" />
               )}
-            </button>
+            </span>
             <span
               id={`${rowId}-message-text`}
-              className="text-sm text-slate-200 break-all font-mono cursor-pointer"
-              onClick={() => setExpanded(!expanded)}
+              className="text-sm text-slate-200 break-all font-mono"
             >
               {item.message}
             </span>
