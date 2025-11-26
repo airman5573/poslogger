@@ -42,23 +42,29 @@ function LogRow({
   const rowId = `${baseId}-row-${item.id}`;
 
   return (
-    <>
-      <tr
-        id={rowId}
-        className={cn(
-          "group border-b border-slate-800 transition-colors hover:bg-slate-900/40",
-          expanded && "bg-slate-900/60"
-        )}
-      >
-        <td id={`${rowId}-level-cell`} className="p-3 align-top">
+    <div
+      id={rowId}
+      className={cn(
+        "flex flex-col border-b border-slate-800 transition-colors hover:bg-slate-900/40",
+        expanded && "bg-slate-900/60"
+      )}
+    >
+      {/* Main row content */}
+      <div className="flex items-start">
+        {/* Level */}
+        <div id={`${rowId}-level-cell`} className="p-3 w-20 flex-shrink-0">
           <Badge id={`${rowId}-level-badge`} tone={levelTone(item.level)} className="whitespace-nowrap">
             {item.level}
           </Badge>
-        </td>
-        <td id={`${rowId}-time-cell`} className="p-3 align-top text-xs text-slate-400 whitespace-nowrap">
+        </div>
+
+        {/* Time */}
+        <div id={`${rowId}-time-cell`} className="p-3 w-48 flex-shrink-0 text-xs text-slate-400 whitespace-nowrap">
           {new Date(item.timestamp).toLocaleString()}
-        </td>
-        <td id={`${rowId}-meta-cell`} className="p-3 align-top">
+        </div>
+
+        {/* Meta (Label/Source) */}
+        <div id={`${rowId}-meta-cell`} className="p-3 w-32 flex-shrink-0">
           <div id={`${rowId}-meta-wrapper`} className="flex flex-col gap-1">
             {item.label && (
               <span
@@ -74,16 +80,18 @@ function LogRow({
               </span>
             )}
           </div>
-        </td>
-        <td
+        </div>
+
+        {/* Message */}
+        <div
           id={`${rowId}-message-cell`}
-          className="p-3 align-top min-w-[300px] cursor-pointer"
+          className="p-3 flex-1 min-w-0 cursor-pointer"
           onClick={() => setExpanded(!expanded)}
         >
           <div id={`${rowId}-message-wrapper`} className="flex items-start gap-2">
             <span
               id={`${rowId}-expand-toggle`}
-              className="mt-0.5 text-slate-500"
+              className="mt-0.5 text-slate-500 flex-shrink-0"
             >
               {expanded ? (
                 <ChevronDown id={`${rowId}-collapse-icon`} className="h-4 w-4" />
@@ -98,8 +106,10 @@ function LogRow({
               {item.message}
             </span>
           </div>
-        </td>
-        <td id={`${rowId}-actions-cell`} className="p-3 align-top text-right whitespace-nowrap min-w-[120px]">
+        </div>
+
+        {/* Actions */}
+        <div id={`${rowId}-actions-cell`} className="p-3 w-[120px] flex-shrink-0 text-right">
           <div id={`${rowId}-actions`} className="flex items-center justify-end gap-1 flex-nowrap">
             <Button
               id={`${rowId}-copy-link-button`}
@@ -132,18 +142,18 @@ function LogRow({
               <Trash2 id={`${rowId}-delete-icon`} className="h-4 w-4 text-red-400" />
             </Button>
           </div>
-        </td>
-      </tr>
+        </div>
+      </div>
+
+      {/* Expanded context viewer */}
       {expanded && (
-        <tr id={`${rowId}-context-row`} className="bg-slate-900/30">
-          <td id={`${rowId}-context-cell`} colSpan={5} className="p-0">
-            <div id={`${rowId}-context-wrapper`} className="border-b border-slate-800 px-4 py-2 pl-12">
-              <LogContextViewer id={`${rowId}-context-viewer`} context={item.context} />
-            </div>
-          </td>
-        </tr>
+        <div id={`${rowId}-context-row`} className="bg-slate-900/30">
+          <div id={`${rowId}-context-wrapper`} className="border-t border-slate-800 px-4 py-2 pl-12">
+            <LogContextViewer id={`${rowId}-context-viewer`} context={item.context} />
+          </div>
+        </div>
       )}
-    </>
+    </div>
   );
 }
 
@@ -152,30 +162,29 @@ export function LogTable({ id, items, onDelete, onCopy, onCopyLink, autoExpandLo
 
   return (
     <div id={tableId} className="w-full overflow-x-auto rounded-lg border border-slate-800 bg-slate-950/50 shadow-sm">
-      <table id={`${tableId}-table`} className="w-full text-left text-sm">
-        <thead id={`${tableId}-head`} className="bg-slate-900 text-xs font-medium uppercase text-slate-500">
-          <tr id={`${tableId}-head-row`}>
-            <th id={`${tableId}-head-level`} className="p-3 w-20">Level</th>
-            <th id={`${tableId}-head-time`} className="p-3 w-48">Time</th>
-            <th id={`${tableId}-head-source`} className="p-3 w-32">Source</th>
-            <th id={`${tableId}-head-message`} className="p-3">Message</th>
-            <th id={`${tableId}-head-actions`} className="p-3 w-[120px] min-w-[120px] text-right">Actions</th>
-          </tr>
-        </thead>
-        <tbody id={`${tableId}-body`} className="divide-y divide-slate-800">
-          {items.map((item) => (
-            <LogRow
-              key={item.id}
-              item={item}
-              onDelete={onDelete}
-              onCopy={onCopy}
-              onCopyLink={onCopyLink}
-              baseId={tableId}
-              autoExpand={autoExpandLogId === item.id}
-            />
-          ))}
-        </tbody>
-      </table>
+      {/* Header */}
+      <div id={`${tableId}-head`} className="flex bg-slate-900 text-xs font-medium uppercase text-slate-500">
+        <div id={`${tableId}-head-level`} className="p-3 w-20 flex-shrink-0">Level</div>
+        <div id={`${tableId}-head-time`} className="p-3 w-48 flex-shrink-0">Time</div>
+        <div id={`${tableId}-head-source`} className="p-3 w-32 flex-shrink-0">Source</div>
+        <div id={`${tableId}-head-message`} className="p-3 flex-1 min-w-0">Message</div>
+        <div id={`${tableId}-head-actions`} className="p-3 w-[120px] flex-shrink-0 text-right">Actions</div>
+      </div>
+
+      {/* Body */}
+      <div id={`${tableId}-body`} className="flex flex-col">
+        {items.map((item) => (
+          <LogRow
+            key={item.id}
+            item={item}
+            onDelete={onDelete}
+            onCopy={onCopy}
+            onCopyLink={onCopyLink}
+            baseId={tableId}
+            autoExpand={autoExpandLogId === item.id}
+          />
+        ))}
+      </div>
     </div>
   );
 }
