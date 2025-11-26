@@ -97,8 +97,8 @@ function LogRow({
             </span>
           </div>
         </td>
-        <td id={`${rowId}-actions-cell`} className="p-3 align-top text-right">
-          <div id={`${rowId}-actions`} className="flex items-center justify-end gap-1">
+        <td id={`${rowId}-actions-cell`} className="p-3 align-top text-right whitespace-nowrap min-w-[120px]">
+          <div id={`${rowId}-actions`} className="flex items-center justify-end gap-1 flex-nowrap">
             <Button
               id={`${rowId}-copy-link-button`}
               variant="ghost"
@@ -157,7 +157,7 @@ export function LogTable({ id, items, onDelete, onCopy, onCopyLink, autoExpandLo
             <th id={`${tableId}-head-time`} className="p-3 w-48">Time</th>
             <th id={`${tableId}-head-source`} className="p-3 w-32">Source</th>
             <th id={`${tableId}-head-message`} className="p-3">Message</th>
-            <th id={`${tableId}-head-actions`} className="p-3 w-24 text-right">Actions</th>
+            <th id={`${tableId}-head-actions`} className="p-3 w-[120px] min-w-[120px] text-right">Actions</th>
           </tr>
         </thead>
         <tbody id={`${tableId}-body`} className="divide-y divide-slate-800">
