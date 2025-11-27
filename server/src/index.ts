@@ -1,6 +1,5 @@
 import "./load-env.js";
 import express from "express";
-import cors from "cors";
 import cookieParser from "cookie-parser";
 import fs from "fs";
 import path from "path";
@@ -13,7 +12,6 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const PORT = Number(process.env.PORT) || 6666;
 const maxBodyBytes = process.env.MAX_BODY_BYTES ? Number(process.env.MAX_BODY_BYTES) : 1_000_000;
-const corsOrigin = process.env.CORS_ORIGIN || "*";
 const staticDir = process.env.CLIENT_DIST || path.resolve(__dirname, "../client-dist");
 
 // Allow every origin/header/method, and short-circuit OPTIONS so preflight never fails
@@ -32,13 +30,6 @@ app.use((req, res, next) => {
   return next();
 });
 
-app.use(
-  cors({
-    origin: corsOrigin === "*" ? "*" : corsOrigin.split(","),
-    methods: ["GET", "POST", "DELETE", "OPTIONS", "PUT", "PATCH"],
-    allowedHeaders: "*",
-  })
-);
 app.use(cookieParser());
 app.use(express.json({ limit: maxBodyBytes }));
 
