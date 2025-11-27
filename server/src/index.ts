@@ -45,7 +45,7 @@ if (fs.existsSync(staticDir)) {
   });
 }
 
-app.use((err: Error, _req: express.Request, res: express.Response) => {
+app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
   console.error("Unhandled error", err);
   res.status(500).json({ error: "Internal server error" });
 });
