@@ -6,6 +6,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import authRouter from "./routes/auth.js";
 import logsRouter from "./routes/logs.js";
+import driveRouter from "./routes/drive.js";
 
 const app = express();
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -37,6 +38,7 @@ app.get("/health", (_req, res) => res.json({ status: "ok" }));
 
 app.use("/api/auth", authRouter);
 app.use("/api/logs", logsRouter);
+app.use("/api/drive", driveRouter);
 
 if (fs.existsSync(staticDir)) {
   app.use(express.static(staticDir));

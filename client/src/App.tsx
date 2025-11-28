@@ -1,12 +1,13 @@
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Link } from "react-router-dom";
 import { Filters } from "./components/Filters";
 import { LogTable } from "./components/LogTable";
 import { Toolbar } from "./components/Toolbar";
 import { deleteAllLogs, deleteLog, fetchAuthStatus, fetchLogs, HttpError, login, logout, refreshAuth } from "./lib/api";
 import { LogItem } from "./types";
 import { Badge } from "./components/ui/badge";
-import { AlertCircle, RefreshCcw, Trash2 } from "lucide-react";
+import { AlertCircle, HardDrive, RefreshCcw, Trash2 } from "lucide-react";
 import { Button } from "./components/ui/button";
 import { SnackbarContainer, useSnackbar } from "./components/ui/snackbar";
 
@@ -327,6 +328,13 @@ function App() {
             </div>
 
             <div id="header-actions" className="flex items-center gap-2">
+              <Link to="/drive">
+                <Button variant="outline" size="sm" className="shadow-sm">
+                  <HardDrive className="h-4 w-4 mr-1" />
+                  Drive
+                </Button>
+              </Link>
+
               <Button
                 variant="outline"
                 size="sm"

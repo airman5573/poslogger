@@ -119,3 +119,41 @@ export async function fetchAuthStatus(): Promise<AuthStatus> {
 
   return res.json();
 }
+
+// Drive API
+export type FileInfo = {
+  name: string;
+  size: number;
+  modifiedAt: string;
+};
+
+export async function fetchFiles(): Promise<{ files: FileInfo[] }> {
+  const res = await fetch(`${API_BASE}/api/drive`, {
+    ...withCredentials,
+  });
+  return handleResponse(res);
+}
+
+export async function uploadFile(file: File): Promise<{ success: boolean; file: FileInfo }> {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const res = await fetch(`${API_BASE}/api/drive`, {
+    method: "POST",
+    body: formData,
+    ...withCredentials,
+  });
+  return handleResponse(res);
+}
+
+export async function deleteFile(filename: string): Promise<{ success: boolean }> {
+  const res = await fetch(`${API_BASE}/api/drive/${encodeURIComponent(filename)}`, {
+    method: "DELETE",
+    ...withCredentials,
+  });
+  return handleResponse(res);
+}
+
+export function getDownloadUrl(filename: string): string {
+  return `${API_BASE}/api/drive/${encodeURIComponent(filename)}`;
+}

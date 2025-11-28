@@ -9,3 +9,5 @@ client/dist
 .env
 server/.env
 client/.env
+storage
+*.zip
