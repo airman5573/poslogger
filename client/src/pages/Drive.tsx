@@ -15,7 +15,8 @@ import {
   login,
   logout,
   refreshAuth,
-  uploadFile,
+  uploadFileWithProgress,
+  UploadProgress,
 } from "../lib/api";
 
 function formatFileSize(bytes: number): string {
@@ -41,6 +42,9 @@ export default function Drive() {
   const [password, setPassword] = useState("");
   const [now, setNow] = useState(Date.now());
   const [isDragging, setIsDragging] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<UploadProgress | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadFileName, setUploadFileName] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const queryClient = useQueryClient();
   const [snackbars, showSnackbar, removeSnackbar] = useSnackbar();
@@ -98,16 +102,25 @@ export default function Drive() {
     enabled: isAuthenticated,
   });
 
-  const uploadMutation = useMutation({
-    mutationFn: (file: File) => uploadFile(file),
-    onSuccess: () => {
+  const handleUpload = async (file: File) => {
+    setIsUploading(true);
+    setUploadFileName(file.name);
+    setUploadProgress({ loaded: 0, total: file.size, percent: 0 });
+
+    try {
+      await uploadFileWithProgress(file, (progress) => {
+        setUploadProgress(progress);
+      });
       queryClient.invalidateQueries({ queryKey: ["files"] });
       showSnackbar("업로드 완료", "success");
-    },
-    onError: () => {
+    } catch (err) {
       showSnackbar("업로드 실패", "error");
-    },
-  });
+    } finally {
+      setIsUploading(false);
+      setUploadProgress(null);
+      setUploadFileName("");
+    }
+  };
 
   const deleteMutation = useMutation({
     mutationFn: (filename: string) => deleteFile(filename),
@@ -134,7 +147,7 @@ export default function Drive() {
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      uploadMutation.mutate(file);
+      handleUpload(file);
     }
     e.target.value = "";
   };
@@ -145,10 +158,10 @@ export default function Drive() {
       setIsDragging(false);
       const file = e.dataTransfer.files[0];
       if (file) {
-        uploadMutation.mutate(file);
+        handleUpload(file);
       }
     },
-    [uploadMutation]
+    []
   );
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
@@ -307,28 +320,55 @@ export default function Drive() {
           className={`mb-6 rounded-xl border-2 border-dashed p-8 text-center transition-colors ${
             isDragging
               ? "border-sky-500 bg-sky-500/10"
+              : isUploading
+              ? "border-sky-500/50 bg-sky-500/5"
               : "border-slate-700 bg-slate-900/50 hover:border-slate-600"
           }`}
           onDrop={handleDrop}
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
         >
-          <Upload className="mx-auto h-10 w-10 text-slate-500 mb-3" />
-          <p className="text-slate-400 mb-3">
-            파일을 여기에 드래그하거나 클릭해서 업로드하세요
-          </p>
-          <input
-            ref={fileInputRef}
-            type="file"
-            onChange={handleFileSelect}
-            className="hidden"
-          />
-          <Button
-            onClick={() => fileInputRef.current?.click()}
-            disabled={uploadMutation.isPending}
-          >
-            {uploadMutation.isPending ? "업로드 중..." : "파일 선택"}
-          </Button>
+          {isUploading ? (
+            <>
+              <div className="mb-4">
+                <div className="text-sky-400 font-medium mb-1">{uploadFileName}</div>
+                <div className="text-slate-400 text-sm">
+                  {uploadProgress && (
+                    <>
+                      {formatFileSize(uploadProgress.loaded)} / {formatFileSize(uploadProgress.total)}
+                    </>
+                  )}
+                </div>
+              </div>
+              <div className="w-full max-w-md mx-auto mb-3">
+                <div className="h-3 bg-slate-800 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-gradient-to-r from-sky-500 to-sky-400 transition-all duration-300 ease-out"
+                    style={{ width: `${uploadProgress?.percent ?? 0}%` }}
+                  />
+                </div>
+              </div>
+              <div className="text-2xl font-bold text-sky-400">
+                {uploadProgress?.percent ?? 0}%
+              </div>
+            </>
+          ) : (
+            <>
+              <Upload className="mx-auto h-10 w-10 text-slate-500 mb-3" />
+              <p className="text-slate-400 mb-3">
+                파일을 여기에 드래그하거나 클릭해서 업로드하세요 (최대 500MB)
+              </p>
+              <input
+                ref={fileInputRef}
+                type="file"
+                onChange={handleFileSelect}
+                className="hidden"
+              />
+              <Button onClick={() => fileInputRef.current?.click()}>
+                파일 선택
+              </Button>
+            </>
+          )}
         </div>
 
         {/* File List */}

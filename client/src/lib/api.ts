@@ -146,6 +146,60 @@ export async function uploadFile(file: File): Promise<{ success: boolean; file: 
   return handleResponse(res);
 }
 
+export type UploadProgress = {
+  loaded: number;
+  total: number;
+  percent: number;
+};
+
+export function uploadFileWithProgress(
+  file: File,
+  onProgress: (progress: UploadProgress) => void
+): Promise<{ success: boolean; file: FileInfo }> {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    const formData = new FormData();
+    formData.append("file", file);
+
+    xhr.upload.addEventListener("progress", (e) => {
+      if (e.lengthComputable) {
+        onProgress({
+          loaded: e.loaded,
+          total: e.total,
+          percent: Math.round((e.loaded / e.total) * 100),
+        });
+      }
+    });
+
+    xhr.addEventListener("load", () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        try {
+          const response = JSON.parse(xhr.responseText);
+          resolve(response);
+        } catch {
+          reject(new Error("Invalid response"));
+        }
+      } else if (xhr.status === 401) {
+        reject(new HttpError("Unauthorized", 401));
+      } else {
+        reject(new HttpError(`Upload failed: ${xhr.status}`, xhr.status));
+      }
+    });
+
+    xhr.addEventListener("error", () => {
+      reject(new Error("Network error"));
+    });
+
+    xhr.addEventListener("abort", () => {
+      reject(new Error("Upload cancelled"));
+    });
+
+    xhr.open("POST", `${API_BASE}/api/drive`);
+    xhr.withCredentials = true;
+    xhr.send(formData);
+  });
+}
+
 export async function deleteFile(filename: string): Promise<{ success: boolean }> {
   const res = await fetch(`${API_BASE}/api/drive/${encodeURIComponent(filename)}`, {
     method: "DELETE",
