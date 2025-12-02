@@ -37,13 +37,14 @@ const buildQuery = (query: LogQuery) => {
   if (query.start) params.set("start", query.start);
   if (query.end) params.set("end", query.end);
   if (query.q) params.set("q", query.q);
-  params.set("limit", String(query.limit ?? 200));
+  if (query.scenarioId) params.set("scenarioId", query.scenarioId);
+  params.set("limit", String(query.limit ?? 100));
   params.set("offset", String(query.offset ?? 0));
   if (query.cursor) params.set("cursor", query.cursor);
   return params.toString();
 };
 
-export async function fetchLogs(query: LogQuery): Promise<{ items: LogItem[]; nextCursor?: string }> {
+export async function fetchLogs(query: LogQuery): Promise<{ items: LogItem[]; nextCursor?: string; hasMore?: boolean }> {
   const qs = buildQuery(query);
   const res = await fetch(`${API_BASE}/api/logs?${qs}`, {
     ...withCredentials,

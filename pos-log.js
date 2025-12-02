@@ -9,6 +9,7 @@
  * @property {string} [source]
  * @property {string} [timestamp]
  * @property {string} [endpoint]
+ * @property {string} [scenarioId]
  *
  * @typedef {Object} LogOptions
  * @property {string} [label]
@@ -16,6 +17,7 @@
  * @property {string} [source]
  * @property {string} [timestamp]
  * @property {string} [endpoint]
+ * @property {string} [scenarioId]
  *
  * @typedef {LogOptions & { error?: unknown }} ErrorLogOptions
  * @typedef {(payload: LogPayload) => Promise<unknown> | void} GlobalLoggerFn
@@ -205,7 +207,16 @@ const attachErrorContext = (context, error) => {
 /**
  * @param {LogPayload} param0
  */
-export const sendLog = async ({ level, message, label, context, source, timestamp, endpoint }) => {
+export const sendLog = async ({
+  level,
+  message,
+  label,
+  context,
+  source,
+  timestamp,
+  endpoint,
+  scenarioId,
+}) => {
   const targetEndpoint = resolveEndpoint(endpoint);
   const response = await fetch(targetEndpoint, {
     method: 'POST',
@@ -217,6 +228,7 @@ export const sendLog = async ({ level, message, label, context, source, timestam
       context: normalizeContext(context),
       source: resolveSource(source),
       timestamp,
+      scenarioId,
     }),
   });
 

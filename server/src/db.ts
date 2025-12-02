@@ -1,7 +1,7 @@
 import Database from "better-sqlite3";
 import fs from "fs";
 import path from "path";
-import { InsertLog, LogRecord } from "./types.js";
+import { InsertLog, LogRecord, ScenarioSummary } from "./types.js";
 
 const DB_PATH = process.env.SQLITE_DB || "./logs/logs.db";
 
@@ -15,6 +15,16 @@ const ensureDbDir = () => {
 ensureDbDir();
 const db = new Database(DB_PATH);
 
+const ensureScenarioColumn = () => {
+  const columns = db
+    .prepare("PRAGMA table_info(logs)")
+    .all() as { name: string }[];
+  const hasScenarioId = columns.some((col) => col.name === "scenario_id");
+  if (!hasScenarioId) {
+    db.exec("ALTER TABLE logs ADD COLUMN scenario_id TEXT;");
+  }
+};
+
 const initSchema = () => {
   db.exec(
     `
@@ -26,12 +36,21 @@ const initSchema = () => {
       context TEXT,
       timestamp TEXT NOT NULL,
       source TEXT,
+      scenario_id TEXT,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
+  `
+  );
+
+  ensureScenarioColumn();
+
+  db.exec(
+    `
     CREATE INDEX IF NOT EXISTS idx_logs_level ON logs(level);
     CREATE INDEX IF NOT EXISTS idx_logs_label ON logs(label);
     CREATE INDEX IF NOT EXISTS idx_logs_source ON logs(source);
     CREATE INDEX IF NOT EXISTS idx_logs_timestamp ON logs(timestamp);
+    CREATE INDEX IF NOT EXISTS idx_logs_scenario_id ON logs(scenario_id);
   `
   );
 };
@@ -42,9 +61,9 @@ export const insertLog = (payload: InsertLog): number => {
   const stmt = db.prepare(
     `
       INSERT INTO logs (
-        level, label, message, context, timestamp, source
+        level, label, message, context, timestamp, source, scenario_id
       ) VALUES (
-        @level, @label, @message, @context, @timestamp, @source
+        @level, @label, @message, @context, @timestamp, @source, @scenario_id
       )
     `
   );
@@ -65,6 +84,7 @@ export const insertLog = (payload: InsertLog): number => {
     context,
     timestamp,
     source: payload.source || null,
+    scenario_id: payload.scenarioId || null,
   });
 
   return Number(info.lastInsertRowid);
@@ -80,9 +100,10 @@ type ListParams = {
   limit: number;
   offset: number;
   sinceId?: number;
+  scenarioId?: string;
 };
 
-export const listLogs = (params: ListParams): LogRecord[] => {
+export const listLogs = (params: ListParams): { items: LogRecord[]; hasMore: boolean } => {
   const where: string[] = [];
   const bind: Record<string, unknown> = {};
 
@@ -118,11 +139,16 @@ export const listLogs = (params: ListParams): LogRecord[] => {
     where.push("id > @sinceId");
     bind.sinceId = params.sinceId;
   }
+  if (params.scenarioId) {
+    where.push("scenario_id = @scenarioId");
+    bind.scenarioId = params.scenarioId;
+  }
 
   const whereSql = where.length ? `WHERE ${where.join(" AND ")}` : "";
+  const limitWithBuffer = params.limit + 1;
   const stmt = db.prepare(
     `
-      SELECT id, level, label, message, context, timestamp, source, created_at
+      SELECT id, level, label, message, context, timestamp, source, scenario_id, created_at
       FROM logs
       ${whereSql}
       ORDER BY timestamp DESC
@@ -130,8 +156,15 @@ export const listLogs = (params: ListParams): LogRecord[] => {
     `
   );
 
-  const rows = stmt.all({ limit: params.limit, offset: params.offset, ...bind }) as LogRecord[];
-  return rows;
+  const rows = stmt.all({
+    limit: limitWithBuffer,
+    offset: params.offset,
+    ...bind,
+  }) as LogRecord[];
+
+  const hasMore = rows.length > params.limit;
+  const items = hasMore ? rows.slice(0, params.limit) : rows;
+  return { items, hasMore };
 };
 
 export const deleteLogById = (id: number): boolean => {
@@ -142,4 +175,63 @@ export const deleteLogById = (id: number): boolean => {
 export const deleteAllLogs = (): number => {
   const info = db.prepare("DELETE FROM logs").run();
   return info.changes;
+};
+
+export const listScenarios = (limit: number): ScenarioSummary[] => {
+  const rows = db
+    .prepare(
+      `
+        SELECT
+          scenario_id as scenarioId,
+          COUNT(*) as logCount,
+          MIN(timestamp) as firstLogAt,
+          MAX(timestamp) as lastLogAt,
+          GROUP_CONCAT(DISTINCT level) as levels
+        FROM logs
+        WHERE scenario_id IS NOT NULL
+        GROUP BY scenario_id
+        ORDER BY lastLogAt DESC
+        LIMIT @limit
+      `
+    )
+    .all({ limit }) as {
+    scenarioId: string;
+    logCount: number;
+    firstLogAt: string;
+    lastLogAt: string;
+    levels: string | null;
+  }[];
+
+  return rows.map((row) => ({
+    scenarioId: row.scenarioId,
+    logCount: Number(row.logCount),
+    firstLogAt: row.firstLogAt,
+    lastLogAt: row.lastLogAt,
+    levels: row.levels
+      ? Array.from(new Set(row.levels.split(",").filter(Boolean)))
+      : [],
+  }));
+};
+
+export const deleteOldLogs = (daysOld: number = 30): number => {
+  const cutoffDate = new Date();
+  cutoffDate.setDate(cutoffDate.getDate() - daysOld);
+
+  const stmt = db.prepare(
+    `
+      DELETE FROM logs
+      WHERE created_at < @cutoff
+    `
+  );
+
+  const info = stmt.run({ cutoff: cutoffDate.toISOString() });
+  return info.changes;
+};
+
+export const scheduleLogCleanup = (daysOld: number = 30) => {
+  const oneDayMs = 24 * 60 * 60 * 1000;
+  setInterval(() => {
+    const deleted = deleteOldLogs(daysOld);
+    console.error(`[Cleanup] Deleted ${deleted} old log entries`);
+  }, oneDayMs);
 };

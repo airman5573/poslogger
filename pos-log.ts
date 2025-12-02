@@ -10,6 +10,7 @@ export type LogPayload = {
   source?: string;
   timestamp?: string;
   endpoint?: string;
+  scenarioId?: string;
 };
 
 export type LogOptions = Omit<LogPayload, 'level' | 'message'>;
@@ -176,6 +177,7 @@ export const sendLog = async ({
   source,
   timestamp,
   endpoint,
+  scenarioId,
 }: LogPayload) => {
   const targetEndpoint = resolveEndpoint(endpoint);
   const response = await fetch(targetEndpoint, {
@@ -188,6 +190,7 @@ export const sendLog = async ({
       context: normalizeContext(context),
       source: resolveSource(source),
       timestamp,
+      scenarioId,
     }),
   });
 

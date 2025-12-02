@@ -6,6 +6,7 @@ export type LogRecord = {
   context: string | null;
   timestamp: string;
   source: string | null;
+  scenario_id: string | null;
   created_at: string;
 };
 
@@ -16,4 +17,13 @@ export type InsertLog = {
   context?: unknown;
   timestamp?: string;
   source?: string;
+  scenarioId?: string;
+};
+
+export type ScenarioSummary = {
+  scenarioId: string;
+  logCount: number;
+  firstLogAt: string;
+  lastLogAt: string;
+  levels: string[];
 };

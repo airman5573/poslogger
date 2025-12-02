@@ -7,6 +7,7 @@ import { fileURLToPath } from "url";
 import authRouter from "./routes/auth.js";
 import logsRouter from "./routes/logs.js";
 import driveRouter from "./routes/drive.js";
+import { scheduleLogCleanup } from "./db.js";
 
 const app = express();
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -51,6 +52,8 @@ app.use((err: Error, _req: express.Request, res: express.Response, _next: expres
   console.error("Unhandled error", err);
   res.status(500).json({ error: "Internal server error" });
 });
+
+scheduleLogCleanup();
 
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`External logger listening on port ${PORT}`);

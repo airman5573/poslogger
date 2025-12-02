@@ -6,6 +6,7 @@ export type LogItem = {
   context: string | null;
   timestamp: string;
   source?: string | null;
+  scenario_id: string | null;
   created_at: string;
 };
 
@@ -16,6 +17,7 @@ export type LogQuery = {
   start?: string;
   end?: string;
   q?: string;
+  scenarioId?: string;
   limit?: number;
   offset?: number;
   cursor?: string;

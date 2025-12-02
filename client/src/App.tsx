@@ -28,7 +28,7 @@ const createInitialFilters = (): FiltersState => ({
   q: "",
   start: "",
   end: "",
-  limit: 200,
+  limit: 100,
 });
 
 function App() {

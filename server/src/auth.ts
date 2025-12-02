@@ -14,6 +14,7 @@ const COOKIE_NAME = process.env.AUTH_COOKIE_NAME || "poslog_auth";
 const parsedTtl = Number(process.env.AUTH_TTL_SECONDS);
 const DEFAULT_TOKEN_TTL_SECONDS = 24 * 60 * 60; // 24 hours
 const TOKEN_TTL_SECONDS = Number.isFinite(parsedTtl) && parsedTtl > 0 ? parsedTtl : DEFAULT_TOKEN_TTL_SECONDS;
+const API_KEY = process.env.LOG_SERVER_API_KEY;
 
 if (!AUTH_PASSWORD) {
   throw new Error("AUTH_PASSWORD (or VIEWER_PASSWORD / LOG_VIEW_PASSWORD) is required for auth");
@@ -43,6 +44,10 @@ export const getAuthTtlMs = () => TOKEN_TTL_SECONDS * 1000;
 const verifyToken = (token: string) => jwt.verify(token, JWT_SECRET) as AuthTokenPayload;
 
 export function requireAuth(req: Request, res: Response, next: NextFunction) {
+  if (API_KEY && req.header("X-API-Key") === API_KEY) {
+    return next();
+  }
+
   const token = req.cookies?.[COOKIE_NAME];
   if (!token) return res.status(401).json({ error: "Unauthorized" });
 
